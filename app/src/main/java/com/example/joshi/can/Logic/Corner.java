@@ -24,6 +24,9 @@ public class Corner {
         }
 
     }
+    
+    public void toString(){
+        return(x + ", " + y);
 
     public void setY(double y) {
         this.y = y;
