@@ -299,6 +299,16 @@ public class Node {
 
 
     //getter and setter
+    
+    public String toString(){
+		return ("TopLeftCorner      = " 		+ getTopLeftCorner() 		+ "\n" +
+				"TopRightCorner     = " 		+ getTopRightCorner() 		+ "\n" +
+				"BottomLeftCorner   = " 		+ getBottomLeftCorner() 	+ "\n" +
+				"BottomRightCorner  = " 		+ getBottomRightCorner()	+ "\n" +
+				"User               = " 		+ getUser() 				+ "\n" +
+				"PeersCount         = "			+ getPeersCount()			+ "\n");
+	}
+    
     public void setBottomLeftCorner(Corner bottomLeftCorner) {
         this.bottomLeftCorner = bottomLeftCorner;
     }
