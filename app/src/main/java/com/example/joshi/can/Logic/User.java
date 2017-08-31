@@ -26,6 +26,10 @@ public class User {
         }
 
     }
+    
+    public String toString(){
+    	return(uid + ", " + ip);
+    }
 
     public int getUid() {
         return uid;
