@@ -1,172 +1,176 @@
-package com.example.joshi.can.Connection;
+package helper;
 
+import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.NoSuchElementException;
 
 
-public class Client extends Thread {
+public class Client {
 
-    /**
-     * Main Methode zum Testen der einzelnen Methoden
-     *
-     * Uebergabe-Werte bitte in der sendAll Methode
-     *
-     * sendAll(String, String, double, double, int)
-     */
-    protected static final int portNr = 8080;
+	protected static final int portNr = 8080;
+	Serialization serialization = new Serialization();
+	Socket socket = null;
+	
+	
+	
+	/**
+	 * Methode, um eine File/ein Image als ByteArray zu senden
+	 * 
+	 * @param ip							= IP Adressse des Empfängers
+	 * @param file							= die File/ das Image zum Senden
+	 * @uses imageSerializer				= Hilfsmethode, um eine File/ein Image als ByteArray wiederzugeben
+	 * @uses sendByteArray 					= Hilfsmethode, zum Senden eines ByteArrays
+	 * @throws UnknownHostException			= unbekannter Host
+	 * @throws IOException					= Fehler beim Input/Output
+	 */
+	
+	protected void sendImageAsByteArray(Socket socket, File file){
+		
+		this.socket = socket;
+		
+		try {
+			
+			byte[] buffer = serialization.imageSerializer(file);
+			
+			sendByteArray(socket, buffer);	
+			try{
+				if(socket!= null){
+					socket.close();
+				}
+			} catch(IOException e){
+				e.printStackTrace();
+			}
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
+	/**
+	 * Methode zum Senden eines ByteArrays
+	 * 
+	 * @param socket 	= das Socket, auf dem Uebertragen wird
+	 * @param buffer	= das zu uebertragende ByteArray
+	 */
+	
+	protected void sendByteArray (Socket socket, byte[] buffer)throws IOException, UnknownHostException{
+		
+		byte[] message = buffer;
+		this.socket    = socket;
+		
+			try{
+			DataOutputStream dOut = new DataOutputStream(socket.getOutputStream());
+	
+			dOut.writeInt(message.length); 
+			dOut.write(message);
+			
+			}catch (IOException e){
+				e.printStackTrace();
+				}finally{
+				}
+					try{
+						if(socket != null){
+							socket.close();
+						}
+					} catch (IOException ex){
+						ex.printStackTrace();
+					}
+	}
+	
+	
+	
+	
+	/**
+	 * Methode, um ein Knoten/Node Objekt als ByteArray zu senden
+	 * 
+	 * @param ip						= IP Adresse des Empfaengers
+	 * @param node						= der zu uebertragende Knoten/Node
+	 * @throws UnknownHostException		= Unknown Host
+	 * @throws IOException				= Fehler beim Input/Output
+	 */
+	
+	protected void sendNodeAsByteArray(String ip, Node node) throws UnknownHostException, IOException{
+		
+		Socket socket = new Socket(ip, portNr);
+		
+		byte[] buffer = serialization.serializeNode(node);
+		
+		sendByteArray(socket, buffer);	
+		
+	}
+	
+    
+    
+	private String convertDoubleToString(double wert){
+		String newString = Double.toString(wert);
+		return newString;
+	}
+	
+    
 
-    public static void main (String args[])throws NoSuchElementException{
-        Client client = new Client();
-        client.run();
-    }
+	@SuppressWarnings("unused")
+	private void sendAll(String ip,String method,String secondString, double x, double y, int schlahmichtot) throws IOException{
+		Socket s = new Socket(ip, portNr);
+		
+		sendMethod(s, method);
+		sendString(s, secondString);
+		sendX(s, x);
+		sendY(s,y);
+		sendInt(s, schlahmichtot);
+		s.close();
+	}
+	
+	private void sendString(Socket s, String secondString) throws IOException{
+	
+		OutputStreamWriter osw = new OutputStreamWriter(s.getOutputStream());
+		PrintWriter out = new PrintWriter(osw);
+		out.write(secondString + "@");
+		osw.flush();
+	}
+	private void sendMethod(Socket s, String method) throws UnknownHostException, IOException{
+		
+		OutputStreamWriter osw = new OutputStreamWriter(s.getOutputStream());
+		PrintWriter out = new PrintWriter(osw);
+		out.write(method + ",");
+		osw.flush();
+	
+	}
 
-    @Override
-    public void run() {
-        Client client = new Client();
-
-        try{
-
-            client.sendAll("localhost","hashX","192.101.101.1" ,0.31, 0.78, 9);
-
-        }catch (UnknownHostException e){
-            e.printStackTrace();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-
-    }
-
-    /**
-     * Hilfsmethode um einen Double Wert in einen String zu casten
-     * @param wert = Double Wert
-     * @return Double als String
-     */
-    private String convertDoubleToString(double wert){
-        String newString = Double.toString(wert);
-        return newString;
-    }
-
-
-    private void sendAll(String ip,String method, String newIP, double x, double y, int schlahmichtot) throws IOException{
-        Socket s = new Socket(ip, portNr);
-        System.out.println("wird gesendet");
-        sendMethod(s, method);
-        sendNewIP(s, newIP);
-        sendX(s, x);
-        sendY(s,y);
-        sendInt(s, schlahmichtot);
-        s.close();
-    }
-
-
-    public void sendeAlles(String ip,String method, String newIP, double x, double y, int schlahmichtot) throws IOException {
-        Client client = new Client();
-        client.sendAll(ip,method, newIP,x,y, schlahmichtot);
-    }
-
-    private void sendMethod(Socket s, String method) throws UnknownHostException, IOException{
-
-        OutputStreamWriter osw = new OutputStreamWriter(s.getOutputStream());
-        PrintWriter out = new PrintWriter(osw);
-        out.write(method + ",");
-        osw.flush();
-
-    }
-
-    private void sendNewIP(Socket s, String newIP) throws IOException {
-        OutputStreamWriter osw = new OutputStreamWriter(s.getOutputStream());
-        PrintWriter out = new PrintWriter(osw);
-        out.write(newIP + "N");
-        osw.flush();
-
-    }
-
-
-    private void sendX(Socket s, double wert) throws UnknownHostException, IOException{
-
-        OutputStreamWriter osw = new OutputStreamWriter(s.getOutputStream());
-        PrintWriter out = new PrintWriter(osw);
-        String wertAlsString = convertDoubleToString(wert);
-        out.write(wertAlsString + "x");
-        osw.flush();
-
-    }
-
-    private void sendY(Socket s, double wert) throws UnknownHostException, IOException{
-
-        OutputStreamWriter osw = new OutputStreamWriter(s.getOutputStream());
-        PrintWriter out = new PrintWriter(osw);
-        String wertAlsString = convertDoubleToString(wert);
-        out.write(wertAlsString + "Y");
-        osw.flush();
-
-    }
-
-    private void sendInt(Socket s, int wert) throws UnknownHostException, IOException{
-
-        OutputStreamWriter osw = new OutputStreamWriter(s.getOutputStream());
-        PrintWriter out = new PrintWriter(osw);
-        String wertAlsString = Integer.toString(wert);
-        out.write(wertAlsString + "I");
-        osw.flush();
-
-    }
-
-
-    ////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////
-    //////////////////////Wird vorerst nicht verwendet!/////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Methode zum Senden einer IP-Adresse als String
-     *
-     * @param ip = IP des ServerSocket
-     * @param ipAdr = IP-Adresse als String
-     *
-     * @throws UnknownHostException
-     * @throws IOException
-     */
-
-    @SuppressWarnings("unused")
-    private void sendIPAddress(String ip, String ipAdr) throws UnknownHostException, IOException{
-
-        Socket s = new Socket(ip, portNr);
-
-        OutputStreamWriter osw = new OutputStreamWriter(s.getOutputStream());
-        PrintWriter out = new PrintWriter(osw);
-        out.write(ipAdr);
-        osw.flush();
-        s.close();
-
-    }
-
-    /**
-     * Methode zum Senden der X-Koordinate
-     * Server ben�tigt aber zuerst Input Parser,
-     * um zu erkennen, dass ein Double geschickt wird
-     *
-     * @param ip = IP-Adresse des Servers
-     * @param x  = Wert der X-Koordinate
-     * @throws UnknownHostException
-     * @throws IOException
-     */
-
-    @SuppressWarnings("unused")
-    private void sendXCoordinate(String ip, double x) throws UnknownHostException, IOException{
-
-        Socket s = new Socket(ip, portNr);
-
-        OutputStreamWriter osw = new OutputStreamWriter(s.getOutputStream());
-        PrintWriter out = new PrintWriter(osw);
-        out.write((int) x);
-        osw.flush();
-        s.close();
-
-    }
+		
+	private void sendX(Socket s, double wert) throws UnknownHostException, IOException{
+				
+		OutputStreamWriter osw = new OutputStreamWriter(s.getOutputStream());
+		PrintWriter out = new PrintWriter(osw);
+		String wertAlsString = convertDoubleToString(wert);
+		out.write(wertAlsString + "X");
+		osw.flush();
+	
+	}
+	
+	private void sendY(Socket s, double wert) throws UnknownHostException, IOException{
+		
+		OutputStreamWriter osw = new OutputStreamWriter(s.getOutputStream());
+		PrintWriter out = new PrintWriter(osw);
+		String wertAlsString = convertDoubleToString(wert);
+		out.write(wertAlsString + "Y");
+		osw.flush();
+	
+	}
+	
+	private void sendInt(Socket s, int wert) throws UnknownHostException, IOException{
+		
+		OutputStreamWriter osw = new OutputStreamWriter(s.getOutputStream());
+		PrintWriter out = new PrintWriter(osw);
+		String wertAlsString = Integer.toString(wert);
+		out.write(wertAlsString + "I");
+		osw.flush();
+	
+	}
 }
